@@ -19,7 +19,7 @@ Module.new do
     favnum = 10
     #ファイルから読み込んでみるよ
     begin
-      text = []
+    text = []
       open("../plugin/favnums.txt") do |file|
         file.each do |read|
           text << read.chomp!
@@ -27,7 +27,7 @@ Module.new do
       end
       favnum = text[1]
     rescue
-      #読み込みが失敗したら10個だけ検索してふぁぼるよ
+      #読み込みが失敗したら10個だけふぁぼるよ
     end
     
     Gtk::Lock.synchronize{
@@ -35,8 +35,8 @@ Module.new do
       main.clear
       #テキストボックスが空なら何もしないよ
       if querybox.text.size > 0 then
-        screen_name = querybox.text
-        user = User.findbyidname("#{screen_name}", true)
+		screen_name = querybox.text
+		user = User.findbyidname("#{screen_name}", true)
         user[:id] if user
         service.call_api(:user_timeline, :user_id => user[:id],
                          :no_auto_since_id => true,
@@ -54,7 +54,7 @@ Module.new do
           } 
         }
       else 
-        # => 応答を復活させるよ
+        #応答を復活させるよ
         querybox.sensitive = true
         elm.sensitive = true
       end
@@ -66,10 +66,10 @@ Module.new do
   plugin.add_event(:boot){ |s|
     service = s
     container = Gtk::VBox.new(false, 0).pack_start(querycont, false).pack_start(main, true)
-    Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
-    #同梱のtarget.pngをskin/data
-    #に置いた時は上をコメントアウトしてこちらをお使いください
-    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
+    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
+	#同梱のtarget.pngをskin/data
+	#に置いた時は上をコメントアウトしてこちらをお使いください
+	Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
 
   }
   
