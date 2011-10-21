@@ -7,7 +7,7 @@ miquire :addon, 'settings'
 #現状is_sleepをtrueにするとmikutter全体が固まってしまいます
 #Gtk::TimeLine内でThreadが立てられないため。
 is_sleep = false
-def xorshift
+def xorshift128
   x = 123456789; y = 362436069; z = 521288629; w = 88675123
   t = 0
   x = Time.now.to_i
@@ -62,7 +62,7 @@ Module.new do
                 mes.favorite(true)
                 main.add(mes)
                 if is_sleep == true then
-                  sleep(stime+0.1*xorshift%10)
+                  sleep(stime+0.1*xorshift128%10)
                 end
               end
             end
@@ -84,9 +84,9 @@ Module.new do
     service = s
     container = Gtk::VBox.new(false, 0).pack_start(querycont, false).pack_start(main, true)
     Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
-	#同梱のtarget.pngをskin/data
-	#に置いた時は上をコメントアウトしてこちらをお使いください
-	#Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
+    #同梱のtarget.pngをskin/data
+    #に置いた時は上をコメントアウトしてこちらをお使いください
+    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
 
   }
   
