@@ -61,9 +61,9 @@ Module.new do
                 #ふぁぼふぁぼするよ
                 mes.favorite(true)
                 main.add(mes)
-				if is_sleep == true then
-				  sleep(stime+0.1*xorshift%10)
-				end
+                if is_sleep == true then
+                  sleep(stime+0.1*xorshift%10)
+                end
               end
             end
             #応答を復活させるよ
