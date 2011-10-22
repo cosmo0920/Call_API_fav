@@ -60,19 +60,19 @@ Module.new do
         }
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
-            if is_sleep == true then
+            if is_longsleep == true then
+              SerialThread.new{
+                #1~10秒の間で待ってからふぁぼふぁぼ
+                sleep(stime.to_i + xorshift128%10)
+                #ふぁぼふぁぼするよ
+                mes.favorite(true)
+              }
+            elsif is_sleep == true then
               SerialThreadFav = SerialThreadGroup.new
               SerialThreadFav.new{
                 #1~10秒の間で待ってから一斉にふぁぼふぁぼ
                 sleep(stime.to_i + xorshift128%10)
                 #ふぁぼふぁぼするよ
-                mes.favorite(true)
-              }
-			elsif is_longsleep == true then
-              SerialThread.new{
-                #1~10秒の間で待ってからふぁぼふぁぼ
-                sleep(stime.to_i + xorshift128%10)
-				#ふぁぼふぁぼするよ
                 mes.favorite(true)
               }
             else
