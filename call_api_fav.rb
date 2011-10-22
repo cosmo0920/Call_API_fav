@@ -4,9 +4,8 @@ miquire :mui, 'skin'
 miquire :addon, 'addon'
 miquire :addon, 'settings'
 
-#現状is_sleepをtrueにするとmikutter全体が固まってしまいます
-#Gtk::TimeLine内でThreadが立てられないため。
-is_sleep = false
+#遅延ふぁぼを有効(true)|無効(false)にします
+is_sleep = true
 def xorshift128
   x = 123456789; y = 362436069; z = 521288629; w = 88675123
   t = 0
@@ -27,10 +26,10 @@ Module.new do
   querybox = Gtk::Entry.new()
   querycont = Gtk::VBox.new(false, 0)
   searchbtn = Gtk::Button.new('ふぁぼ候補')
-  stime = 1.0
   
   searchbtn.signal_connect('clicked'){ |elm|
     favnum = 10
+    stime = 1.0
     #ファイルから読み込んでみるよ
     begin
       text = []
@@ -39,9 +38,10 @@ Module.new do
           text << read.chomp!
         end
       end
-      favnum = text[1]
+      favnum = text[1] #ふぁぼ数の設定
+      stime = text[2] #遅延時間の設定(sec.)
     rescue
-      #読み込みが失敗したら10個だけふぁぼるよ
+      #読み込みが失敗したら1〜10秒の遅延で10個だけふぁぼるよ
     end
     
     Gtk::Lock.synchronize{
@@ -58,12 +58,15 @@ Module.new do
           Gtk::Lock.synchronize{
             res.each do |mes|
               unless mes.favorite? || mes.retweet?
-                #ふぁぼふぁぼするよ
-                mes.favorite(true)
+                SerialThread.new{
+                  if is_sleep == true then
+                    #1~10秒の間でゆっくりとふぁぼふぁぼ
+                    sleep(stime.to_i+xorshift128%10)
+                  end
+                  #ふぁぼふぁぼするよ
+                  mes.favorite(true)
+                }
                 main.add(mes)
-                if is_sleep == true then
-                  sleep(stime+0.1*xorshift128%10)
-                end
               end
             end
             #応答を復活させるよ
