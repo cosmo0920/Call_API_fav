@@ -5,8 +5,9 @@ miquire :addon, 'addon'
 miquire :addon, 'settings'
 
 #遅延ふぁぼを有効(true)|無効(false)にします
-#有効にするとmikutterが重くなる可能性があります
 is_sleep = true
+#こちらのオプションを有効にするとメインイベントをブロックしてまでちまちまふぁぼります
+is_longsleep = false
 def xorshift128
   x = 123456789; y = 362436069; z = 521288629; w = 88675123
   t = 0
@@ -59,7 +60,14 @@ Module.new do
         }
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
-            if is_sleep == true then
+            if is_longsleep == true then
+              SerialThread.new{
+                #1~10秒の間で待ってからふぁぼふぁぼ
+                sleep(stime.to_i + xorshift128%10)
+                #ふぁぼふぁぼするよ
+                mes.favorite(true)
+              }
+            elsif is_sleep == true then
               SerialThreadFav = SerialThreadGroup.new
               SerialThreadFav.new{
                 #1~10秒の間で待ってから一斉にふぁぼふぁぼ
