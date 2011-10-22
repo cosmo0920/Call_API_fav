@@ -53,23 +53,28 @@ Module.new do
       service.call_api(:user_timeline, :user_id => user[:id],
                        :no_auto_since_id => true,
                        :count => favnum.to_i){ |res|
-        main.add(res)
+        Delayer.new{
+          main.add(res)
+        }
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
             if is_sleep == true then
-              SerialThreadGroup.new{
+              SerialThreadFav = SerialThreadGroup.new
+              SerialThreadFav.new{
                 #1~10秒の間でゆっくりとふぁぼふぁぼ
                 sleep(stime.to_i+xorshift128%10)
                 #ふぁぼふぁぼするよ
                 mes.favorite(true)
-			  }
+              }
             else
-              SerialThreadGroup.new{
+              SerialThreadFav = SerialThreadGroup.new
+              SerialThreadFav.new{
                 #ふぁぼふぁぼするよ
                 mes.favorite(true)
-			  }
+              }
             end
           end
+          #main.add(mes)
         end
       }
     end
@@ -80,10 +85,10 @@ Module.new do
   plugin.add_event(:boot){ |s|
     service = s
     container = Gtk::VBox.new(false, 0).pack_start(querycont, false).pack_start(main, true)
-    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
+    Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
     #同梱のtarget.pngをskin/data
     #に置いた時は上をコメントアウトしてこちらをお使いください
-    Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
+    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
     
   }
   
