@@ -6,6 +6,8 @@ miquire :addon, 'settings'
 
 #遅延ふぁぼを有効(true)|無効(false)にします
 is_sleep = true
+#こちらのオプションを有効にするとメインイベントをブロックしてまでちまちまふぁぼります
+is_longsleep = false
 def xorshift128
   x = 123456789; y = 362436069; z = 521288629; w = 88675123
   t = 0
@@ -61,9 +63,16 @@ Module.new do
             if is_sleep == true then
               SerialThreadFav = SerialThreadGroup.new
               SerialThreadFav.new{
-                #1~10秒の間でゆっくりとふぁぼふぁぼ
-                sleep(stime.to_i+xorshift128%10)
+                #1~10秒の間で待ってから一斉にふぁぼふぁぼ
+                sleep(stime.to_i + xorshift128%10)
                 #ふぁぼふぁぼするよ
+                mes.favorite(true)
+              }
+			elsif is_longsleep == true then
+              SerialThread.new{
+                #1~10秒の間で待ってからふぁぼふぁぼ
+                sleep(stime.to_i + xorshift128%10)
+				#ふぁぼふぁぼするよ
                 mes.favorite(true)
               }
             else
@@ -74,7 +83,6 @@ Module.new do
               }
             end
           end
-          #main.add(mes)
         end
       }
     end
@@ -85,10 +93,10 @@ Module.new do
   plugin.add_event(:boot){ |s|
     service = s
     container = Gtk::VBox.new(false, 0).pack_start(querycont, false).pack_start(main, true)
-    Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
+    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
     #同梱のtarget.pngをskin/data
     #に置いた時は上をコメントアウトしてこちらをお使いください
-    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
+    Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
     
   }
   
