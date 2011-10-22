@@ -29,7 +29,7 @@ Module.new do
   
   searchbtn.signal_connect('clicked'){ |elm|
     favnum = 10
-    stime = 1.0
+    stime = 1
     #ファイルから読み込んでみるよ
     begin
       text = []
@@ -44,41 +44,35 @@ Module.new do
       #読み込みが失敗したら1〜10秒の遅延で10個だけふぁぼるよ
     end
     
-    Gtk::Lock.synchronize{
-      elm.sensitive = querybox.sensitive = false
-      main.clear
-      #テキストボックスが空なら何もしないよ
-      if querybox.text.size > 0 then
-        screen_name = querybox.text
-        user = User.findbyidname("#{screen_name}", true)
-        user[:id] if user
-        service.call_api(:user_timeline, :user_id => user[:id],
-                         :no_auto_since_id => true,
-                         :count => favnum.to_i){ |res|
-          Gtk::Lock.synchronize{
-            res.each do |mes|
-              unless mes.favorite? || mes.retweet?
-                SerialThread.new{
-                  if is_sleep == true then
-                    #1~10秒の間でゆっくりとふぁぼふぁぼ
-                    sleep(stime.to_i+xorshift128%10)
-                  end
-                  #ふぁぼふぁぼするよ
-                  mes.favorite(true)
-                }
-                main.add(mes)
-              end
+    main.clear
+    #テキストボックスが空なら何もしないよ
+    if querybox.text.size > 0 then
+      screen_name = querybox.text
+      user = User.findbyidname("#{screen_name}", true)
+      user[:id] if user
+      service.call_api(:user_timeline, :user_id => user[:id],
+                       :no_auto_since_id => true,
+                       :count => favnum.to_i){ |res|
+        main.add(res)
+        res.each do |mes|
+          unless mes.favorite? || mes.retweet?
+            if is_sleep == true then
+              SerialThreadGroup.new{
+                #1~10秒の間でゆっくりとふぁぼふぁぼ
+                sleep(stime.to_i+xorshift128%10)
+                #ふぁぼふぁぼするよ
+                mes.favorite(true)
+			  }
+            else
+              SerialThreadGroup.new{
+                #ふぁぼふぁぼするよ
+                mes.favorite(true)
+			  }
             end
-            #応答を復活させるよ
-            elm.sensitive = querybox.sensitive = true
-          } 
-        }
-      else 
-        #応答を復活させるよ
-        querybox.sensitive = true
-        elm.sensitive = true
-      end
-    } 
+          end
+        end
+      }
+    end
   }
   
   querycont.closeup(Gtk::HBox.new(false, 0).pack_start(querybox).closeup(searchbtn))
@@ -86,11 +80,11 @@ Module.new do
   plugin.add_event(:boot){ |s|
     service = s
     container = Gtk::VBox.new(false, 0).pack_start(querycont, false).pack_start(main, true)
-    Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
+    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("etc.png"))
     #同梱のtarget.pngをskin/data
     #に置いた時は上をコメントアウトしてこちらをお使いください
-    #Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
-
+    Plugin.call(:mui_tab_regist, container, 'Call_Api_ToFav', MUI::Skin.get("target.png"))
+    
   }
   
 end
