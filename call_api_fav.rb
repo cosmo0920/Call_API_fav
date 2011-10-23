@@ -15,7 +15,7 @@ def xorshift128_sleep(stime)
   t = x ^ (x << 11)
   x = y; y = z; z = w
   w = (w ^ (w >> 19)) ^ (t ^ (t >> 8))
-  sleep(stime.to_i+ (w%10).to_i)
+  sleep(rand(stime.to_i)+ (w%10).to_i)
 end
 
 Module.new do
@@ -61,16 +61,16 @@ Module.new do
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
             if $is_sleep == true then
-              SerialThreadFav = SerialThreadGroup.new
-              SerialThreadFav.new{
+              @threadFav = SerialThreadGroup.new
+              @threadFav.new{                
                 #待ってからふぁぼふぁぼ
                 xorshift128_sleep(stime.to_i)
                 #ふぁぼふぁぼするよ
                 mes.favorite(true)
               }
             else
-              SerialThreadFav = SerialThreadGroup.new
-              SerialThreadFav.new{
+              @threadFav = SerialThreadGroup.new
+              @threadFav.new{
                 #ふぁぼふぁぼするよ
                 mes.favorite(true)
               }
