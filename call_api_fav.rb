@@ -18,6 +18,30 @@ def xorshift128_sleep(stime)
   sleep(rand(stime.to_i)+ (w%10).to_i)
 end
 
+def sleep_favs(res,stime)
+  for mes in res
+    unless mes.favorite? || mes.retweet?
+    @threadFav = SerialThreadGroup.new
+      @threadFav.new{
+        sleep(xorshift128_sleep(stime))
+        mes.favorite(true)
+     }
+    end
+  end
+end
+
+def favs(res)
+  res.each do |mes|
+    unless mes.favorite? || mes.retweet?
+      @threadFav = SerialThreadGroup.new
+      @threadFav.new{
+        #ふぁぼふぁぼするよ
+        mes.favorite(true)
+      }
+    end
+  end
+end
+
 Module.new do
   
   plugin = Plugin::create(:call_api_Tofav)
@@ -57,23 +81,13 @@ Module.new do
                        :count => favnum.to_i){ |res|
         Delayer.new{
           main.add(res)
-        }
+		}
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
             if $is_sleep == true then
-              @threadFav = SerialThreadGroup.new
-              @threadFav.new{                
-                #待ってからふぁぼふぁぼ
-                xorshift128_sleep(stime.to_i)
-                #ふぁぼふぁぼするよ
-                mes.favorite(true)
-              }
+              sleep_favs(res,stime)
             else
-              @threadFav = SerialThreadGroup.new
-              @threadFav.new{
-                #ふぁぼふぁぼするよ
-                mes.favorite(true)
-              }
+              favs(res)
             end
           end
         end
