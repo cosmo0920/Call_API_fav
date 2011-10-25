@@ -72,6 +72,7 @@ Module.new do
     
     main.clear
     #テキストボックスが空なら何もしないよ
+    #フォローしてない人のスクリーンネーム入れると落ちるかもよ
     if querybox.text.size > 0 then
       screen_name = querybox.text
       user = User.findbyidname("#{screen_name}", true)
@@ -81,7 +82,7 @@ Module.new do
                        :count => favnum.to_i){ |res|
         Delayer.new{
           main.add(res)
-		}
+        }
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
             if $is_sleep == true then
