@@ -6,7 +6,7 @@ miquire :addon, 'settings'
 
 #遅延ふぁぼを有効(true)|無効(false)にします
 #有効にするとmikutterが重くなる可能性があります
-$is_sleep = true
+$is_sleep = false
 
 def xorshift128_sleep(stime)
   x = 123456789; y = 362436069; z = 521288629; w = 88675123
@@ -16,30 +16,6 @@ def xorshift128_sleep(stime)
   x = y; y = z; z = w
   w = (w ^ (w >> 19)) ^ (t ^ (t >> 8))
   sleep(rand(stime.to_i)+ (w%10).to_i)
-end
-
-def sleep_favs(res,stime)
-  for mes in res
-    unless mes.favorite? || mes.retweet?
-    @threadFav = SerialThreadGroup.new
-      @threadFav.new{
-        sleep(xorshift128_sleep(stime))
-        mes.favorite(true)
-     }
-    end
-  end
-end
-
-def favs(res)
-  res.each do |mes|
-    unless mes.favorite? || mes.retweet?
-      @threadFav = SerialThreadGroup.new
-      @threadFav.new{
-        #ふぁぼふぁぼするよ
-        mes.favorite(true)
-      }
-    end
-  end
 end
 
 Module.new do
@@ -72,7 +48,6 @@ Module.new do
     
     main.clear
     #テキストボックスが空なら何もしないよ
-    #フォローしてない人のスクリーンネーム入れると落ちるかもよ
     if querybox.text.size > 0 then
       screen_name = querybox.text
       user = User.findbyidname("#{screen_name}", true)
@@ -86,9 +61,18 @@ Module.new do
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
             if $is_sleep == true then
-              sleep_favs(res,stime)
+              @threadFav = SerialThreadGroup.new
+              @threadFav.new{
+                #ふぁぼふぁぼするよ
+                sleep(xorshift128_sleep(stime))
+                mes.favorite(true)
+              }
             else
-              favs(res)
+              @threadFav = SerialThreadGroup.new
+              @threadFav.new{
+                #ふぁぼふぁぼするよ
+                mes.favorite(true)
+              }
             end
           end
         end
