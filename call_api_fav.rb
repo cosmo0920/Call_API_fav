@@ -20,7 +20,7 @@ Plugin.create(:call_api_fav) do
   searchbtn = Gtk::Button.new('ふぁぼ候補')
 
   tab(:call_api_fav, 'Call_Api_ToFav') do
-    set_icon MUI::Skin.get("etc.png")
+    set_icon File.expand_path(File.join(File.dirname(__FILE__), 'target.png'))
     shrink
     nativewidget Gtk::HBox.new(false, 0).pack_start(querybox).closeup(searchbtn)
     expand
