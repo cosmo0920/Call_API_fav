@@ -48,31 +48,30 @@ Plugin.create(:call_api_fav) do
     #テキストボックスが空なら何もしないよ
     if querybox.text.size > 0 then
       screen_name = querybox.text
-      user = User.findbyidname("#{screen_name}", true)
-      user[:id] if user
-      Service.primary.call_api(:user_timeline, :user_id => user[:id],
-                               :no_auto_since_id => true,
-                               :count => favnum.to_i){ |res|
+      Thread.new {
+        user = User.findbyidname("#{screen_name}", true)
+        Deferred.fail "user @#{screen_name} not found." if not user
+        user
+      }.next { |user|
+        Service.primary.user_timeline(:user_id => user[:id],
+                                      :no_auto_since_id => true,
+                                      :count => favnum.to_i)
+      }.next { |res|
         timeline(:call_api_fav) << res
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
             if $is_sleep == true then
-              @threadFav = SerialThreadGroup.new
-              @threadFav.new{
+              Reserver.new(xorshift128_sleep(stime)){
                 #ふぁぼふぁぼするよ
-                sleep(xorshift128_sleep(stime))
                 mes.favorite(true)
               }
             else
-              @threadFav = SerialThreadGroup.new
-              @threadFav.new{
-                #ふぁぼふぁぼするよ
-                mes.favorite(true)
-              }
+              #ふぁぼふぁぼするよ
+              mes.favorite(true)
             end
           end
         end
-      }
+      }.terminate("@#{screen_name} をふぁぼれませんでした")
     end
   }
 end
