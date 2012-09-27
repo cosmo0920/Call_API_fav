@@ -1,9 +1,5 @@
 # -*- coding:utf-8 -*-
 
-#遅延ふぁぼを有効(true)|無効(false)にします
-#有効にするとmikutterが重くなる可能性があります
-$is_sleep = false
-
 def xorshift128_sleep(stime)
   x = 123456789; y = 362436069; z = 521288629; w = 88675123
   t = 0
@@ -28,22 +24,13 @@ Plugin.create(:call_api_fav) do
   end
 
   searchbtn.signal_connect('clicked'){ |elm|
-    favnum = 10
-    stime = 1
-    #ファイルから読み込んでみるよ
-    begin
-      text = []
-      open("../plugin/favnums.txt") do |file|
-        file.each do |read|
-          text << read.chomp!
-        end
-      end
-      favnum = text[1] #ふぁぼ数の設定
-      stime = text[2] #遅延時間の設定(sec.)
-    rescue
-      #読み込みが失敗したら1〜10秒の遅延で10個だけふぁぼるよ
-    end
+    favnum = (UserConfig[:retrive_fav_give]||10).to_i
+    stime = (UserConfig[:retrive_fav_delay]||1).to_i
     
+	#遅延ふぁぼを有効(true)|無効(false)にします
+    #有効にするとmikutterが重くなる可能性があります
+	is_sleep = (UserConfig[:retrive_fav_isdelay]|| false)
+
     timeline(:call_api_fav).clear
     #テキストボックスが空なら何もしないよ
     if querybox.text.size > 0 then
@@ -60,7 +47,7 @@ Plugin.create(:call_api_fav) do
         timeline(:call_api_fav) << res
         res.each do |mes|
           unless mes.favorite? || mes.retweet?
-            if $is_sleep == true then
+            if is_sleep == true then
               Reserver.new(xorshift128_sleep(stime)){
                 #ふぁぼふぁぼするよ
                 mes.favorite(true)
@@ -74,4 +61,13 @@ Plugin.create(:call_api_fav) do
       }.terminate("@#{screen_name} をふぁぼれませんでした")
     end
   }
+
+  #設定から与えるふぁぼ数を設定するよ
+  settings "call_api_fav" do
+    settings "何ふぁぼ与えるかを選択してください" do
+      adjustment('ふぁぼる回数', :retrive_fav_give, 1, 127)
+      boolean('遅延ふぁぼを行う', :retrive_fav_isdelay);
+      adjustment('遅延時間', :retrive_fav_delay, 1, 60)
+    end
+  end
 end
